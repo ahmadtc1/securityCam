@@ -1,6 +1,6 @@
 from computerVision.motionDetector import singleMotionDetector as smd
 import numpy as np
-from flask import Flask, render_template, Response
+from flask import Flask, render_template, Response, redirect
 import threading
 import argparse
 import datetime
@@ -19,9 +19,13 @@ app = Flask(__name__)
 vs = VideoStream(src=0).start()
 time.sleep(2.0)
 
+@app.route("/")
+def default():
+    return redirect('/home')
+
 #Default path routing
-@app.route("/", methods=["GET"])
-def main():
+@app.route("/home", methods=["GET", "POST"])
+def home():
     return render_template("index.html")
 
 def detectMotion(frameCount):
@@ -34,7 +38,7 @@ def detectMotion(frameCount):
     while True:
         #Obtain the frame and greyscale and slightly blur it
         frame = vs.read()
-        frame = imutils.resize(frame, width=400)
+        frame = imutils.resize(frame, width=800)
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         gray = cv2.GaussianBlur(gray, (7, 7), 0)
 
@@ -85,7 +89,7 @@ def generate():
 			bytearray(encodedImg) + b'\r\n')
 
 
-@app.route("/video_stream", methods=["GET"])
+@app.route("/videoStream", methods=["GET"])
 def videoStream():
     #Return the generated response along with the media type
     return Response(generate(), mimetype="multipart/x-mixed-replace; boundary=frame")

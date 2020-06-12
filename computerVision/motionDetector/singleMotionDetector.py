@@ -3,7 +3,6 @@ import imutils
 import cv2
 
 class SingleMotionDetector:
-
     #initialize with accumulative weight and set background to none
     def __init__(self, accumulativeWeight=0.5):
         #Setting accumWeight to 0.5 initially to evenly weigh the initial bg
@@ -20,7 +19,7 @@ class SingleMotionDetector:
 
     def detect(self, image, threshVal=25):
         #Calculate the difference between the background and the current image and thresh it
-        delta = cv2.absdiff(self.bg.astype("float"), image)
+        delta = cv2.absdiff(self.bg.astype("uint8"), image)
         thresh = cv2.threshold(delta, threshVal, 255, cv2.THRESH_BINARY)[1]
 
         #erode and dilate to clean up contours
