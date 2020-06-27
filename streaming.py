@@ -1,4 +1,5 @@
 from computerVision.motionDetector import singleMotionDetector as smd
+from computerVision.faceDetector import faceDetector
 import numpy as np
 from flask import Flask, render_template, Response, redirect
 import threading
@@ -8,6 +9,10 @@ import time
 from imutils.video import VideoStream
 import cv2
 import imutils
+
+#Const variables used for the face detection model
+MODEL_PATH = "res10_300x300_ssd_iter_140000.caffemodel"
+PROTOTXT_PATH = "deploy.prototxt.txt"
 
 #Init a lock for thread safety when exchanging output frames
 outputFrame = None
@@ -30,9 +35,10 @@ def home():
 
 def detectMotion(frameCount):
     #Obtain global refs to the videostream, output frame, and lock
-    global vs, outputFrame, lock
+    global vs, outputFrame, lock, MODEL_PATH, PROTOTXT_PATH
 
     md = smd.SingleMotionDetector(accumulativeWeight=0.1)
+    fd = faceDetector.FaceDetector(prototxt=PROTOTXT_PATH, model=MODEL_PATH)
     total = 0
 
     while True:
