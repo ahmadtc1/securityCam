@@ -30,8 +30,9 @@ class FaceDetector:
 
                 face = image[startY: endY, startX: endX]
                 #face = imutils.resize(face, width = width + 100)
-                #cv2.rectangle(image, (startX, startY), (endX, endY), (0,0,255), 2)
-                self.saveImg(face)
+                #Ensure that the extracted face isn't none to defend against image saving errors
+                if (face is not None):
+                    self.saveImg(face)
 
 
     def saveImg(self, image):
