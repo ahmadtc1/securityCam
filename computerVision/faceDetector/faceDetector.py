@@ -4,12 +4,17 @@ import cv2
 import datetime
 import imutils
 import os
+import threading
+from computerVision.imageCompression import imageCompressor
+from userAlerts.twitterAlert import TwitterCommunicator
 
 class FaceDetector:
     def __init__(self, prototxt, model):
         self.prototxt = prototxt
         self.model = model
         self.loadModel()
+        self.compressor = imageCompressor.ImageCompressor()
+        self.twitterComm = TwitterCommunicator()
 
     def loadModel(self):
         self.net = cv2.dnn.readNetFromCaffe(self.prototxt, self.model)
@@ -32,8 +37,16 @@ class FaceDetector:
                 #face = imutils.resize(face, width = width + 100)
                 #Ensure that the extracted face isn't none to defend against image saving errors
                 if (face is not None):
+                    #Set up multithreading below to use when implementing image compression 
+                    #(as image compression is costly) and takes some time
+                    #face = self.compressor.svdCompress(face)
+                    #saveFace = threading.Thread(target=self.saveImg, args=(face, ))
+                    #saveFace.start()
+                    now = datetime.datetime.now()
+                    current_time = now.strftime("%H.%M.%S")
+                    message = "A face has been detected @" + current_time
+                    self.twitterComm.directMessage(message)
                     self.saveImg(face)
-
 
     def saveImg(self, image):
         #If it doesn't already exist, create a directory for storing the detected faces
