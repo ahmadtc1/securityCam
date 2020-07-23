@@ -40,9 +40,11 @@ def detectMotion(frameCount):
     md = smd.SingleMotionDetector(accumulativeWeight=0.1)
     fd = faceDetector.FaceDetector(prototxt=PROTOTXT_PATH, model=MODEL_PATH)
     total = 0
+    frameNum = 0
 
     while True:
         #Obtain the frame and greyscale and slightly blur it
+        frameNum += 1
         frame = vs.read()
         frame = imutils.resize(frame, width=800)
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -58,8 +60,14 @@ def detectMotion(frameCount):
             #If sufficient frames have come by, detect for motion
             motion = md.detect(gray)
 
+            #Only check for faces every 10 frames (for performance speed)
             if (motion is not None):
                 #If motion was found, display where the motion occurred
+                if (frameNum == 20):
+                    fd.detectFaces(image=frame)
+                    # Reset the frameNum count so we don't get integer overflow
+                    frameNum = 0
+
                 (thresh, (lowerX, lowerY, upperX, upperY)) = motion
                 cv2.rectangle(frame, (lowerX, lowerY), (upperX, upperY), (0, 0, 255), 2)
         
