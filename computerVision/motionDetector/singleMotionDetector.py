@@ -4,6 +4,7 @@ import cv2
 import datetime
 from requests_oauthlib import OAuth1
 import requests
+from userAlerts.twitterAlert import TwitterCommunicator
 
 class SingleMotionDetector:
     #initialize with accumulative weight and set background to none
@@ -11,6 +12,7 @@ class SingleMotionDetector:
         #Setting accumWeight to 0.5 initially to evenly weigh the initial bg
         self.accumWeight = accumulativeWeight
         self.bg = None
+        self.twitterComm = TwitterCommunicator()
 
     def update(self, image):
         #Initialize the bg if it hasn't been set yet
@@ -47,27 +49,9 @@ class SingleMotionDetector:
             (upperX, upperY) = (max(upperX, x + w), max(upperY, y + h))
 
         if ((lowerX, lowerY) == (np.inf, np.inf) and (upperX, upperY) == (-np.inf, -np.inf)):
-            time = datetime.datetime.now()
-            url = 'https://api.twitter.com/1.1/direct_messages/events/new.json'
-            message = "Motion has been detected on youe camera stream at " + time.strftime("%A %d %B %Y %I:%M:%S%p")
-            auth = OAuth1('OJCwZkO2oHJ9KkxBuRz9PQyOa', 'Ws5aJZANI6tVw53nEvCl7B5cyceB6N8wqhdD3hPluy7IXkPd0t',
-            '3324006958-ppFpnkIC7MHMBH3WsJHOZKCk7aaEJnVhtm5y3Hi', '9k3Nc9INYHC4qbQj4xcTl7VRHsArXegoFqOXdKDZ6v48j')
-            headers = {'content-type': 'application/json'}
-            payload = {
-                "event": {
-                    "type": "message_create",
-                    "message_create": {
-                        "target": {
-                            "recipient_id": "3324006958"
-                        },
-                        "message_data": {
-                            "text": message
-                        }
-                    }
-                }
-            }
+            curTime = datetime.datetime.now()
+            current_time = curTime.strftime("%H.%M.%S")
+            message = "Motion has been detected @" + current_time
+            self.twitterComm.directMessage(message)
             
-
-            response = requests.post(url, headers=headers, data=payload)
-
         return (thresh, (lowerX, lowerY, upperX, upperY))
