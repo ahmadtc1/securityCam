@@ -19,7 +19,7 @@ class FaceDetector:
     def loadModel(self):
         self.net = cv2.dnn.readNetFromCaffe(self.prototxt, self.model)
 
-    def detectFaces(self, image):
+    def detectFaces(self, image, sendAlert):
         (h, w) = image.shape[:2]
         blob = cv2.dnn.blobFromImage(cv2.resize(image, (300,300)), 1.0, (300,300), (104.0,177.0,123.0))
         self.net.setInput(blob)
@@ -42,10 +42,11 @@ class FaceDetector:
                     #face = self.compressor.svdCompress(face)
                     #saveFace = threading.Thread(target=self.saveImg, args=(face, ))
                     #saveFace.start()
-                    now = datetime.datetime.now()
-                    current_time = now.strftime("%H.%M.%S")
-                    message = "A face has been detected @" + current_time
-                    self.twitterComm.directMessage(message)
+                    if (sendAlert):
+                        now = datetime.datetime.now()
+                        current_time = now.strftime("%H.%M.%S")
+                        message = "A face has been detected @" + current_time
+                        self.twitterComm.directMessage(message)
                     self.saveImg(face)
 
     def saveImg(self, image):

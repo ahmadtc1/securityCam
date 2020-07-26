@@ -22,7 +22,7 @@ class SingleMotionDetector:
         #Calculate the weighted average
         cv2.accumulateWeighted(image, self.bg, self.accumWeight)
 
-    def detect(self, image, threshVal=25):
+    def detect(self, image, sendAlert, threshVal=25):
         #Calculate the difference between the background and the current image and thresh it
         delta = cv2.absdiff(self.bg.astype("uint8"), image)
         thresh = cv2.threshold(delta, threshVal, 255, cv2.THRESH_BINARY)[1]
@@ -42,16 +42,23 @@ class SingleMotionDetector:
         if (len(contours) == 0):
             return None
         
+        detectedMotions = []
         #Update the area of motion dependant on the area of the motion contours
         for cont in contours:
             (x, y, w, h) = cv2.boundingRect(cont)
-            (lowerX, lowerY) = (min(lowerX, x), min(lowerY, y))
-            (upperX, upperY) = (max(upperX, x + w), max(upperY, y + h))
+            area = w * h
 
-        if ((lowerX, lowerY) == (np.inf, np.inf) and (upperX, upperY) == (-np.inf, -np.inf)):
-            curTime = datetime.datetime.now()
-            current_time = curTime.strftime("%H.%M.%S")
-            message = "Motion has been detected @" + current_time
-            self.twitterComm.directMessage(message)
+            if (area > 1000):
+                detectedMotions.append((x, y, x + w, y + h))
+
+            # (lowerX, lowerY) = (min(lowerX, x), min(lowerY, y))
+            # (upperX, upperY) = (max(upperX, x + w), max(upperY, y + h))
+        
+        if (sendAlert):
+            if (len(detectedMotions) > 0):
+                curTime = datetime.datetime.now()
+                current_time = curTime.strftime("%H.%M.%S")
+                message = "Motion has been detected @" + current_time
+                self.twitterComm.directMessage(message)
             
-        return (thresh, (lowerX, lowerY, upperX, upperY))
+        return (thresh, detectedMotions)
