@@ -48,6 +48,9 @@ class FaceDetector:
                         message = "A face has been detected @" + current_time
                         self.twitterComm.directMessage(message)
                     self.saveImg(face)
+                    return True
+        
+        return False
 
     def saveImg(self, image):
         #If it doesn't already exist, create a directory for storing the detected faces

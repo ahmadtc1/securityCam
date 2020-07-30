@@ -41,14 +41,23 @@ def detectMotion(frameCount):
     fd = faceDetector.FaceDetector(prototxt=PROTOTXT_PATH, model=MODEL_PATH)
     total = 0
     frameNum = 0
+    dmCountFace = 0
+    dmCountMotion = 0
 
     while True:
         #Obtain the frame and greyscale and slightly blur it
         frameNum += 1
+        # Count the total number of passed frames before sending a Twitter Direct Message
+        # To ensure the Twitter API doesn't block us for too many requests in a short timespan
+        dmCountMotion += 1
+        dmCountFace += 1
         frame = vs.read()
         frame = imutils.resize(frame, width=800)
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         gray = cv2.GaussianBlur(gray, (7, 7), 0)
+
+        print(f"dmCountMotion {dmCountMotion}")
+        print(f"dmCountFace {dmCountFace}")
 
         #Obtain the timestamp and add it to the frame
         timestamp = datetime.datetime.now()
@@ -58,18 +67,40 @@ def detectMotion(frameCount):
         
         if (total > frameCount):
             #If sufficient frames have come by, detect for motion
-            motion = md.detect(gray)
+            # Only send alerts every > 300 frames so not to get blocked by twitter api
+            if (dmCountMotion > 300):
+                # detect motion with the send alert flag true if greater than 300 frames have passed
+                motion = md.detect(gray, sendAlert=True)
 
-            #Only check for faces every 10 frames (for performance speed)
+                # Only reset the dmCountMotion if we passed the send alert flag as true and didn't detect any motion
+                if (motion is not None):
+                    if (len(motion[1]) > 0):
+                        dmCountMotion = 0
+            else:
+                motion = md.detect(gray, sendAlert=False)
+            
             if (motion is not None):
-                #If motion was found, display where the motion occurred
-                if (frameNum == 20):
-                    fd.detectFaces(image=frame)
-                    # Reset the frameNum count so we don't get integer overflow
-                    frameNum = 0
+                # Only check for faces every 20 frames (for performance speed)
+                if (frameNum >= 20):
+                    # Ensure that we're waiting 300 frames before sending dms
+                    if (dmCountFace > 300):
+                        ret = fd.detectFaces(image=frame, sendAlert=True)
+                        if (ret == True):
+                            dmCountFace = 0
+                        
+                        frameNum = 0
 
-                (thresh, (lowerX, lowerY, upperX, upperY)) = motion
-                cv2.rectangle(frame, (lowerX, lowerY), (upperX, upperY), (0, 0, 255), 2)
+                    # If it hasn't been 300 frames just detect faces without sending an alert
+                    else:
+                        fd.detectFaces(image=frame, sendAlert=False)
+                        frameNum = 0
+
+                # Extract the detected motions and draw them onto the image
+                # TODO: merge overlapping detection boxes into one box
+                (thresh, motions) = motion
+                for singleMotion in motions:
+                    (lowerX, lowerY, upperX, upperY) = singleMotion
+                    cv2.rectangle(frame, (lowerX, lowerY), (upperX, upperY), (0, 0, 255), 2)
         
         #Update the background and increment tht total num of frames
         md.update(gray)
