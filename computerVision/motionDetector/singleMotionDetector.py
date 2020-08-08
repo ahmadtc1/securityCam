@@ -62,3 +62,25 @@ class SingleMotionDetector:
                 self.twitterComm.directMessage(message)
             
         return (thresh, detectedMotions)
+
+
+def boxIntersect(boxOne, boxTwo):
+    # Given two bounding boxes, determine whether they intersect/overlap
+    lowerX1 = boxOne[0]
+    lowerY1 = boxOne[1]
+    upperX1 = boxOne[2]
+    upperY1 = boxOne[3]
+
+    lowerX2 = boxTwo[0]
+    lowerY2 = boxTwo[1]
+    upperX2 = boxTwo[2]
+    upperY2 = boxTwo[3]
+
+def mergeBoxes(boxOne, boxTwo):
+    # Given two bounding boxes, merge them into one
+    lowerX = min(boxOne[0], boxTwo[0])
+    upperX = max(boxOne[2], boxTwo[2])
+    lowerY = min(boxOne[1], boxTwo[1]
+    upperY = max(boxOne[3], boxTwo[3]))
+
+    return (lowerX, lowerY, upperX, upperY)

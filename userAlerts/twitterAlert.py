@@ -15,8 +15,8 @@ class TwitterCommunicator:
 
     '''
     Sends a dm to the user.
-    @param {message}  REQUIRED        - The desired message to send
-    @param {user}  NOT REQUIRED    - The id of the user to be dm'd. default is authenticated user 
+    @param {message}  REQUIRED     - The desired message to send
+    @param {user}  NOT REQUIRED    - The id of the user to be dm'd. defaults to authenticated user 
     '''
     def directMessage(self, message, user=None):
         if (user is not None):
