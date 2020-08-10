@@ -5,11 +5,13 @@ import datetime
 from requests_oauthlib import OAuth1
 import requests
 from userAlerts.twitterAlert import TwitterCommunicator
+import logging
 
 class SingleMotionDetector:
     #initialize with accumulative weight and set background to none
     def __init__(self, accumulativeWeight=0.5):
         #Setting accumWeight to 0.5 initially to evenly weigh the initial bg
+        logging.debug("Initializing SingleMotionDetector")
         self.accumWeight = accumulativeWeight
         self.bg = None
         self.twitterComm = TwitterCommunicator()
@@ -40,6 +42,7 @@ class SingleMotionDetector:
         (upperX, upperY) = (-np.inf, -np.inf)
 
         if (len(contours) == 0):
+            logging.debug("No motion detected, moving on")
             return None
         
         detectedMotions = []
@@ -59,12 +62,14 @@ class SingleMotionDetector:
                 curTime = datetime.datetime.now()
                 current_time = curTime.strftime("%H.%M.%S")
                 message = "Motion has been detected @" + current_time
+                logging.info("Motion detected - Sending motion detection DM")
                 self.twitterComm.directMessage(message)
             
         return (thresh, detectedMotions)
 
 
 def boxIntersect(boxOne, boxTwo):
+    logging.debug("Checking box intersection for two detection b-boxes")
     # Given two bounding boxes, determine whether they intersect/overlap
     lowerX1 = boxOne[0]
     lowerY1 = boxOne[1]
@@ -78,9 +83,10 @@ def boxIntersect(boxOne, boxTwo):
 
 def mergeBoxes(boxOne, boxTwo):
     # Given two bounding boxes, merge them into one
+    logging.debug("Found overlapping b-boxes. Merging these boxes")
     lowerX = min(boxOne[0], boxTwo[0])
     upperX = max(boxOne[2], boxTwo[2])
-    lowerY = min(boxOne[1], boxTwo[1]
-    upperY = max(boxOne[3], boxTwo[3]))
+    lowerY = min(boxOne[1], boxTwo[1])
+    upperY = max(boxOne[3], boxTwo[3])
 
     return (lowerX, lowerY, upperX, upperY)

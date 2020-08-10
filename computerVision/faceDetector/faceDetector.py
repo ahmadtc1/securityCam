@@ -7,9 +7,11 @@ import os
 import threading
 from computerVision.imageCompression import imageCompressor
 from userAlerts.twitterAlert import TwitterCommunicator
+import logging
 
 class FaceDetector:
     def __init__(self, prototxt, model):
+        logging.debug("Initializing FaceDetector")
         self.prototxt = prototxt
         self.model = model
         self.loadModel()
@@ -17,6 +19,7 @@ class FaceDetector:
         self.twitterComm = TwitterCommunicator()
 
     def loadModel(self):
+        logging.debug("Loading caffe model")
         self.net = cv2.dnn.readNetFromCaffe(self.prototxt, self.model)
 
     def detectFaces(self, image, sendAlert):
@@ -42,6 +45,7 @@ class FaceDetector:
                     #face = self.compressor.svdCompress(face)
                     #saveFace = threading.Thread(target=self.saveImg, args=(face, ))
                     #saveFace.start()
+                    logging.info("Face detected. Saving image of face")
                     if (sendAlert):
                         now = datetime.datetime.now()
                         current_time = now.strftime("%H.%M.%S")
@@ -50,11 +54,13 @@ class FaceDetector:
                     self.saveImg(face)
                     return True
         
+        logging.info("No face detected")
         return False
 
     def saveImg(self, image):
         #If it doesn't already exist, create a directory for storing the detected faces
         if (not os.path.isdir("faces")):
+            logging.info("Faces directory doesn't exist. Creating directory")
             os.mkdir("faces")
 
         #Construct the fileName for each detected face using a timestamp
@@ -72,3 +78,5 @@ class FaceDetector:
         filePath = os.path.join("faces", fileName)
 
         cv2.imwrite(filePath, image)
+
+        logging.info(f"Succesfully saved detected face to faces folder - {filePath}")

@@ -1,8 +1,10 @@
 import requests
 import tweepy
+import logging
 
 class TwitterCommunicator:
     def __init__(self):
+        logging.debug("Initializing TwitterCommunicator")
         # Handle authorization for the Twitter API
         auth = tweepy.OAuthHandler("OJCwZkO2oHJ9KkxBuRz9PQyOa", 
                                     "Ws5aJZANI6tVw53nEvCl7B5cyceB6N8wqhdD3hPluy7IXkPd0t")
@@ -19,6 +21,7 @@ class TwitterCommunicator:
     @param {user}  NOT REQUIRED    - The id of the user to be dm'd. defaults to authenticated user 
     '''
     def directMessage(self, message, user=None):
+        logging.debug("Sending direct message from TwitterCommunicator")
         if (user is not None):
             self.api.send_direct_message(user, message)
         

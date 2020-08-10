@@ -9,6 +9,7 @@ import time
 from imutils.video import VideoStream
 import cv2
 import imutils
+import logging
 
 #Const variables used for the face detection model
 MODEL_PATH = "res10_300x300_ssd_iter_140000.caffemodel"
@@ -76,6 +77,8 @@ def detectMotion(frameCount):
                 if (motion is not None):
                     if (len(motion[1]) > 0):
                         dmCountMotion = 0
+                        logging.info("Sending motion detected DM")
+                        logging.info("Resetting motion count counter")
             else:
                 motion = md.detect(gray, sendAlert=False)
             
@@ -84,8 +87,11 @@ def detectMotion(frameCount):
                 if (frameNum >= 20):
                     # Ensure that we're waiting 300 frames before sending dms
                     if (dmCountFace > 300):
+
                         ret = fd.detectFaces(image=frame, sendAlert=True)
                         if (ret == True):
+                            logging.info("Sending face detected DM")
+                            logging.info("Resetting face count counter")
                             dmCountFace = 0
                         
                         frameNum = 0
@@ -141,7 +147,11 @@ def videoStream():
 
 
 if (__name__ == "__main__"):
-    #Build the argument parser for the cli
+    # Setup for basic logging
+    logging.basicConfig(filename="secureStream.log", level=logging.INFO, format='%(asctime)s %(message)s')
+    logging.info("Starting stream")
+
+    # Build the argument parser for the cli
     ap = argparse.ArgumentParser()
     ap.add_argument("-i", "--ip", help="ip address of the device", 
         type=str, required=True)
@@ -151,7 +161,7 @@ if (__name__ == "__main__"):
         type=int, default=32)
     args = vars(ap.parse_args())
 
-    #Set up the threading for concurrency handling
+    # Set up the threading for concurrency handling
     t = threading.Thread(target=detectMotion, args=(args["frame_count"],))
     t.daemon = True
     t.start()
