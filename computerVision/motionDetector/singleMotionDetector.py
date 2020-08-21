@@ -81,6 +81,17 @@ def boxIntersect(boxOne, boxTwo):
     upperX2 = boxTwo[2]
     upperY2 = boxTwo[3]
 
+    xLow = max(lowerX1, lowerX2)
+    xHigh = min(upperX1, upperX2)
+
+    yLow = max(lowerY1, lowerY2)
+    yHigh = min(upperY1, upperY2)
+
+    if (xLow > xHigh or yLow > yHigh):
+        return False
+
+    return True
+
 def mergeBoxes(boxOne, boxTwo):
     # Given two bounding boxes, merge them into one
     logging.debug("Found overlapping b-boxes. Merging these boxes")
