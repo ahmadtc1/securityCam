@@ -6,10 +6,10 @@ class TwitterCommunicator:
     def __init__(self):
         logging.debug("Initializing TwitterCommunicator")
         # Handle authorization for the Twitter API
-        auth = tweepy.OAuthHandler("OJCwZkO2oHJ9KkxBuRz9PQyOa", 
-                                    "Ws5aJZANI6tVw53nEvCl7B5cyceB6N8wqhdD3hPluy7IXkPd0t")
-        auth.set_access_token("3324006958-V0DcjTUL138TMI2MGaA9Cb5iAQQugqYiQsBiEaT",
-                                "2GNE4Bzfc6PeEAZliVoH8L48vIys8m2VOoRaR6Dtmg0JA")
+        auth = tweepy.OAuthHandler("", 
+                                    "")
+        auth.set_access_token("",
+                                "")
         # Add an instance of the api to class variables as well as the current authenticated 
         # user's id
         self.api = tweepy.API(auth)
